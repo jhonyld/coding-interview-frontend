@@ -1,42 +1,71 @@
-# Bienvenido al coding-interview-frontend
+# Crypto Currency Calculator
 
-## Descripción
-Acá tienes todos los assets que necesitas para llevar a cabo una pequeña prueba técnica. El objetivo es que puedas demostrar tus habilidades de programación y de UI. El proyecto consiste de una pequeña calculadora que te muestra cuanto vas a recibir si quieres cambiar una determinada cantidad de una moneda a otra.
+A Flutter application for iOS and Android that serves as a cryptocurrency to FIAT currency calculator with responsive design, clean architecture, and internationalization (English, Spanish, Portuguese).
 
-## Características
-1. Hay dos tipos de monedas: "FIAT" y "CRYPTO".
-2. La tasa de cambio la podrás obtener de nuestro API público.
-3. La moneda del input 
+## Features
+- Crypto-to-FIAT and FIAT-to-crypto conversion
+- Local asset data for currencies
+- Responsive UI for phones and tablets
+- Internationalization (i18n) with 3 languages
+- State management with Provider
+- Clean architecture and SOLID principles
 
-## API
-- URL: https://74j6q7lg6a.execute-api.eu-west-1.amazonaws.com/stage/orderbook/public/recommendations
-- Query Params:
-  - `type`: 0 -> Cambio de CRYPTO a FIAT, 1 -> Cambio de FIAT a CRYPTO
-  - `cryptoCurrencyId`: La moneda crypto (el ID está en el nombre del asset)
-  - `fiatCurrencyId`: La moneda fiat (el ID está en el nombre del asset)
-  - `amount`: Cantidad a cambiar
-  - `amountCurrencyId`: La moneda en la que está del input
+## Project Structure
+```
+lib/
+├── core/
+├── data/
+│   ├── models/
+│   ├── repositories/
+│   └── datasources/
+├── domain/
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
+├── presentation/
+│   ├── bloc/
+│   ├── pages/
+│   └── widgets/
+├── l10n/
+└── main.dart
+```
 
-Del response, simplemente obtener el `data.byPrice.fiatToCryptoExchangeRate` y multiplicarlo/dividirlo para mostrar toda la data necesaria.
+## Setup Instructions
+1. **Install dependencies:**
+   ```sh
+   flutter pub get
+   ```
+2. **Run the app:**
+   ```sh
+   flutter run
+   ```
+   (Choose your device: iOS, Android, or web)
 
-### Que puedes hacer: 
-- ✅ Preferiblemente, usa Flutter :)
-- ✅ Cuantas mejoras de UX como veas necesarias/quieras
-- ✅ No todo tiene que estar funcionando a la perfección, lo que más vamos a tomar en cuenta es el parecido con el diseño y la calidad del código.
-- ✅ Desarrolla la app con la arquitecura de una app que va a escalar, no hagas un código que no puedas mantener en el futuro.
+## Adding New Cryptocurrencies
+1. Open `assets/data/currencies.json`.
+2. Add a new entry to the `cryptocurrencies` array with fields:
+   - `id`, `name`, `symbol`, `logoPath`, `conversionRates` (map of fiat IDs to rates)
+3. Add the logo image to `assets/cripto_currencies/`.
+4. Update `pubspec.yaml` if you add new asset folders.
 
+## Internationalization
+- Edit `lib/l10n/app_en.arb`, `app_es.arb`, and `app_pt.arb` for translations.
 
-### Que **no** puedes hacer:
-- ❌ Estresarte 🤗
+## Architecture
+- **Provider** for dependency injection and state management
+- **Bloc/Cubit** logic via ChangeNotifier
+- **Clean architecture**: data, domain, and presentation layers
 
+## Tests
+- Add unit tests in `test/` for business logic
+- Add widget tests for UI
 
-## Pasos para comenzar
-1. Haz un fork usando este repositorio como template
-2. Clona el repositorio en tu máquina
-3. Desarrolla la mini-app
-4. Sube tus cambios a tu repositorio
-5. Avísanos que has terminado
-6. ???
-7. PROFIT
+## Layout Reference
+- The following images are provided in the `assets/` folder for layout and design reference:
+  - `screen_1.jpg`
+  - `sheet_1.jpg`
+  - `sheet_2.jpg`
+- Use these images to match the UI as closely as possible to the intended design.
 
-### Cualquier duda contactarme a https://www.linkedin.com/in/carlosfontest/
+## License
+MIT

@@ -1,0 +1,49 @@
+{
+    "cryptocurrencies": [
+        {
+            "id": "usdt",
+            "name": "Tether USD",
+            "symbol": "USDT",
+            "logoPath": "assets/cripto_currencies/TATUM-TRON-USDT.png",
+            "conversionRates": {
+                "usd": 1.00,
+                "brl": 5.20,
+                "cop": 4000.00,
+                "pen": 3.80,
+                "ves": 35.50
+            }
+        }
+    ],
+    "fiatCurrencies": [
+        {
+            "id": "usd",
+            "name": "US Dollar",
+            "symbol": "USD",
+            "logoPath": "assets/fiat_currencies/BRL.png"
+        },
+        {
+            "id": "brl",
+            "name": "Brazilian Real",
+            "symbol": "BRL",
+            "logoPath": "assets/fiat_currencies/BRL.png"
+        },
+        {
+            "id": "cop",
+            "name": "Colombian Peso",
+            "symbol": "COP",
+            "logoPath": "assets/fiat_currencies/COP.png"
+        },
+        {
+            "id": "pen",
+            "name": "Peruvian Sol",
+            "symbol": "PEN",
+            "logoPath": "assets/fiat_currencies/PEN.png"
+        },
+        {
+            "id": "ves",
+            "name": "Venezuelan Bolívar",
+            "symbol": "VES",
+            "logoPath": "assets/fiat_currencies/VES.png"
+        }
+    ]
+}

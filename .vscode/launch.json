@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter: Launch on Device",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "Flutter: Run Tests",
+            "type": "dart",
+            "request": "launch",
+            "program": "test/widget_test.dart"
+        },
+        {
+            "name": "Flutter: Attach to Process",
+            "type": "dart",
+            "request": "attach"
+        }
+    ]
+}
