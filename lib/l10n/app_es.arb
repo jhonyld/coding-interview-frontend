@@ -1,0 +1,10 @@
+{
+  "appTitle": "Calculadora de Criptomonedas",
+  "cryptocurrencyLabel": "Criptomoneda",
+  "fiatCurrencyLabel": "Moneda FIAT",
+  "amountLabel": "Cantidad",
+  "resultLabel": "Resultado: {value} {currency}",
+  "enterAmountHint": "Ingrese la cantidad y seleccione monedas",
+  "errorLabel": "Error: {error}",
+  "loadingLabel": "Cargando..."
+} 

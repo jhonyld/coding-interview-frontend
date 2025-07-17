@@ -1,0 +1,10 @@
+{
+  "appTitle": "Crypto Currency Calculator",
+  "cryptocurrencyLabel": "Cryptocurrency",
+  "fiatCurrencyLabel": "FIAT Currency",
+  "amountLabel": "Amount",
+  "resultLabel": "Result: {value} {currency}",
+  "enterAmountHint": "Enter amount and select currencies",
+  "errorLabel": "Error: {error}",
+  "loadingLabel": "Loading..."
+} 
