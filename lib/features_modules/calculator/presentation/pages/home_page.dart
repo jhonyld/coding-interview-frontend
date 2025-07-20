@@ -66,223 +66,233 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle),
               ),
             ),
-            Center(
-              child: BlocBuilder<CurrencyBloc, CurrencyState>(
-                builder: (context, state) {
-                  if (state is CurrencyLoading || state is CurrencyInitial) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is CurrencyError) {
-                    return Center(child: Text(state.message));
-                  } else if (state is CurrencyLoaded) {
-                    final cryptocurrencies = state.cryptocurrencies;
-                    final fiatCurrencies = state.fiatCurrencies;
-                    final selectedCrypto = state.selectedCrypto;
-                    final selectedFiat = state.selectedFiat;
-                    final inputAmount = state.inputAmount;
-                    final conversionResult = state.conversionResult;
-                    final isFetchingRate = state.isFetchingRate;
-                    final error = state.error;
-                    // if (_amountController.text !=
-                    //     (inputAmount == 0.0 ? '' : inputAmount.toString())) {
-                    //   _amountController.text = inputAmount == 0.0 ? '' : inputAmount.toString();
-                    // }
-                    return SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 24,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Currency selection row
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    _CurrencySelectorButton(
-                                      label: localizations.haveLabel,
-                                      currency: selectedCrypto,
-                                      isActive: true,
-                                      onTap: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          //backgroundColor: Colors.transparent,
-                                          builder:
-                                              (context) => CurrencySelectorModal(
-                                                currencies: cryptocurrencies,
-                                                selectedCurrency: selectedCrypto,
-                                                onCurrencySelected:
-                                                    (currency) => context.read<CurrencyBloc>().add(
-                                                      SelectCryptoCurrency(currency),
-                                                    ),
-                                                title: localizations.cryptoModalTitle,
-                                                isCrypto: true,
-                                              ),
-                                        );
-                                      },
-                                    ),
-
-                                    _SwapCurrency(
-                                      selectedCrypto: selectedCrypto,
-                                      selectedFiat: selectedFiat,
-                                    ),
-                                    _CurrencySelectorButton(
-                                      label: localizations.wantLabel,
-                                      currency: selectedFiat,
-                                      isActive: true,
-                                      onTap: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          //backgroundColor: Colors.transparent,
-                                          builder:
-                                              (context) => CurrencySelectorModal(
-                                                currencies: fiatCurrencies,
-                                                selectedCurrency: selectedFiat,
-                                                onCurrencySelected:
-                                                    (currency) => context.read<CurrencyBloc>().add(
-                                                      SelectFiatCurrency(currency),
-                                                    ),
-                                                title: localizations.fiatModalTitle,
-                                                isCrypto: false,
-                                              ),
-                                        );
-                                      },
-                                    ),
-                                  ],
+            BlocListener<CurrencyBloc, CurrencyState>(
+              listener: (context, state) {
+                if (state is CurrencyLoaded && state.error != null && state.error!.isNotEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.error!), backgroundColor: Colors.red),
+                  );
+                }
+              },
+              child: Center(
+                child: BlocBuilder<CurrencyBloc, CurrencyState>(
+                  builder: (context, state) {
+                    if (state is CurrencyLoading || state is CurrencyInitial) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is CurrencyError) {
+                      return Center(child: Text(state.message));
+                    } else if (state is CurrencyLoaded) {
+                      final cryptocurrencies = state.cryptocurrencies;
+                      final fiatCurrencies = state.fiatCurrencies;
+                      final selectedCrypto = state.selectedCrypto;
+                      final selectedFiat = state.selectedFiat;
+                      final inputAmount = state.inputAmount;
+                      final conversionResult = state.conversionResult;
+                      final isFetchingRate = state.isFetchingRate;
+                      final error = state.error;
+                      return SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.06),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 8),
                                 ),
-                              ),
-                              const SizedBox(height: 24),
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: const Color(0xFFF4B53F), width: 2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      selectedCrypto?.symbol ?? '',
-                                      style: const TextStyle(
-                                        color: Color(0xFFF4B53F),
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextField(
-                                        onEditingComplete: () {
-                                          //Cuando quita el focus o presiona en Done realizar la conversión
-                                          //Tambien se valida que si escribe , lo cambie por .
-                                          final parsed = double.parse(
-                                            _amountController.text.replaceAll(",", "."),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Currency selection row
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      _CurrencySelectorButton(
+                                        label: localizations.haveLabel,
+                                        currency: selectedCrypto,
+                                        isActive: true,
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            builder:
+                                                (context) => CurrencySelectorModal(
+                                                  currencies: cryptocurrencies,
+                                                  selectedCurrency: selectedCrypto,
+                                                  onCurrencySelected:
+                                                      (currency) => context
+                                                          .read<CurrencyBloc>()
+                                                          .add(SelectCryptoCurrency(currency)),
+                                                  title: localizations.cryptoModalTitle,
+                                                  isCrypto: true,
+                                                ),
                                           );
-                                          context.read<CurrencyBloc>().add(AmountChanged(parsed));
-                                          context.read<CurrencyBloc>().add(FetchConversionRate());
                                         },
-                                        onChanged: (value) {
-                                          // Se valida que si escribe , lo cambie por . y se envia a convertir
-                                          _amountController.text = value.replaceAll(",", ".");
+                                      ),
 
-                                          final parsed =
-                                              double.tryParse(_amountController.text) ?? 0;
-                                          context.read<CurrencyBloc>().add(AmountChanged(parsed));
-                                          context.read<CurrencyBloc>().add(FetchConversionRate());
+                                      _SwapCurrency(
+                                        selectedCrypto: selectedCrypto,
+                                        selectedFiat: selectedFiat,
+                                      ),
+                                      _CurrencySelectorButton(
+                                        label: localizations.wantLabel,
+                                        currency: selectedFiat,
+                                        isActive: true,
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            builder:
+                                                (context) => CurrencySelectorModal(
+                                                  currencies: fiatCurrencies,
+                                                  selectedCurrency: selectedFiat,
+                                                  onCurrencySelected:
+                                                      (currency) => context
+                                                          .read<CurrencyBloc>()
+                                                          .add(SelectFiatCurrency(currency)),
+                                                  title: localizations.fiatModalTitle,
+                                                  isCrypto: false,
+                                                ),
+                                          );
                                         },
-                                        controller: _amountController,
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                                        decoration: InputDecoration(
-                                          border: InputBorder.none,
-                                          hintText: "0.00",
-                                        ),
-                                        keyboardType: TextInputType.numberWithOptions(
-                                          decimal: true,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: const Color(0xFFF4B53F), width: 2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        selectedCrypto?.symbol ?? '',
+                                        style: const TextStyle(
+                                          color: Color(0xFFF4B53F),
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 16,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // Exchange info
-                              _ExchangeInfoRow(
-                                label: localizations.estimatedRate,
-                                value:
-                                    conversionResult != null && inputAmount > 0
-                                        ? '= ${(conversionResult / inputAmount).toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
-                                        : '-',
-                                bold: false,
-                              ),
-                              const SizedBox(height: 8),
-                              _ExchangeInfoRow(
-                                label: localizations.youReceive,
-                                value:
-                                    conversionResult != null && inputAmount > 0
-                                        ? '= ${conversionResult.toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
-                                        : '-',
-                                bold: false,
-                              ),
-                              const SizedBox(height: 8),
-                              _ExchangeInfoRow(
-                                label: localizations.estimatedTime,
-                                value: '= 1 Min',
-                                bold: false,
-                              ),
-                              const SizedBox(height: 20),
-                              // Action button
-                              SizedBox(
-                                width: double.infinity,
-                                height: 48,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFF59E0B),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    elevation: 0,
-                                  ),
-                                  onPressed:
-                                      inputAmount > 0 &&
-                                              selectedCrypto != null &&
-                                              selectedFiat != null
-                                          ? () {
-                                            // Conversion happens on focus loss
-                                          }
-                                          : null,
-                                  child: Text(
-                                    localizations.exchangeButton,
-                                    style: const TextStyle(color: Colors.white),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: TextField(
+                                          onChanged: (value) {
+                                            _amountController.text = value.replaceAll(",", ".");
+                                            final parsed =
+                                                double.tryParse(_amountController.text) ?? 0;
+                                            context.read<CurrencyBloc>().add(AmountChanged(parsed));
+                                            // No fetch here
+                                          },
+                                          controller: _amountController,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: "0.00",
+                                          ),
+                                          keyboardType: TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 24),
+                                // Exchange info
+                                _ExchangeInfoRow(
+                                  label: localizations.estimatedRate,
+                                  value:
+                                      conversionResult != null && inputAmount > 0
+                                          ? '= 	${(conversionResult / inputAmount).toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
+                                          : '-',
+                                  bold: false,
+                                ),
+                                const SizedBox(height: 8),
+                                _ExchangeInfoRow(
+                                  label: localizations.youReceive,
+                                  value:
+                                      conversionResult != null && inputAmount > 0
+                                          ? '= ${conversionResult.toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
+                                          : '-',
+                                  bold: false,
+                                ),
+                                const SizedBox(height: 8),
+                                _ExchangeInfoRow(
+                                  label: localizations.estimatedTime,
+                                  value: '= 1 Min',
+                                  bold: false,
+                                ),
+                                const SizedBox(height: 20),
+                                // Action button
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 48,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFF59E0B),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    onPressed:
+                                        inputAmount > 0 &&
+                                                selectedCrypto != null &&
+                                                selectedFiat != null &&
+                                                !isFetchingRate
+                                            ? () {
+                                              context.read<CurrencyBloc>().add(
+                                                FetchConversionRate(),
+                                              );
+                                            }
+                                            : null,
+                                    child:
+                                        isFetchingRate
+                                            ? const SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: CircularProgressIndicator(
+                                                valueColor: AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                            : Text(
+                                              localizations.exchangeButton,
+                                              style: const TextStyle(color: Colors.white),
+                                            ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }
-                  return const SizedBox();
-                },
+                      );
+                    }
+                    return const SizedBox();
+                  },
+                ),
               ),
             ),
           ],

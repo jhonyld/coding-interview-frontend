@@ -143,7 +143,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
         emit(s.copyWith(isFetchingRate: true, error: null));
         try {
           final rate = await repository.getExchangeRate(
-            type: 1, // Crypto->Fiat
+            type: 0, // Crypto->Fiat
             cryptoCurrencyId: s.selectedCrypto!.id,
             fiatCurrencyId: s.selectedFiat!.id,
             amount: s.inputAmount,

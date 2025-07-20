@@ -24,7 +24,7 @@ class CurrencyApiDataSource {
     final response = await http.get(uri);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return (data['data']['byPrice']['fiatToCryptoExchangeRate'] as num).toDouble();
+      return double.parse(data['data']['byPrice']["fiatToCryptoExchangeRate"]);
     } else {
       throw Exception('Failed to fetch exchange rate');
     }
