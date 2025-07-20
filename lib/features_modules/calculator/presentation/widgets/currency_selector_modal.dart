@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../data/models/crypto_currency_model.dart';
-import '../../data/models/fiat_currency_model.dart';
 
 class CurrencySelectorModal extends StatelessWidget {
   final List<dynamic> currencies;
@@ -21,7 +18,6 @@ class CurrencySelectorModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
     return SafeArea(
       child: Container(
         height: MediaQuery.of(context).size.height * 0.7,

@@ -3,7 +3,7 @@ import 'package:coding_interview_frontend/features_modules/calculator/data/model
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/currency_bloc.dart';
-import '../../../../l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/currency_selector_modal.dart';
 
 class HomePage extends StatefulWidget {
@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height;
     final width = MediaQuery.sizeOf(context).width;
-    final loc = AppLocalizations.of(context);
+    final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     _CurrencySelectorButton(
-                                      label: loc.haveLabel,
+                                      label: localizations.haveLabel,
                                       currency: selectedCrypto,
                                       isActive: true,
                                       onTap: () {
@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                     (currency) => context.read<CurrencyBloc>().add(
                                                       SelectCryptoCurrency(currency),
                                                     ),
-                                                title: loc.cryptoModalTitle,
+                                                title: localizations.cryptoModalTitle,
                                                 isCrypto: true,
                                               ),
                                         );
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                       selectedFiat: selectedFiat,
                                     ),
                                     _CurrencySelectorButton(
-                                      label: loc.wantLabel,
+                                      label: localizations.wantLabel,
                                       currency: selectedFiat,
                                       isActive: true,
                                       onTap: () {
@@ -158,7 +158,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                     (currency) => context.read<CurrencyBloc>().add(
                                                       SelectFiatCurrency(currency),
                                                     ),
-                                                title: loc.fiatModalTitle,
+                                                title: localizations.fiatModalTitle,
                                                 isCrypto: false,
                                               ),
                                         );
@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               const SizedBox(height: 24),
                               // Exchange info
                               _ExchangeInfoRow(
-                                label: loc.estimatedRate,
+                                label: localizations.estimatedRate,
                                 value:
                                     conversionResult != null && inputAmount > 0
                                         ? '= ${(conversionResult / inputAmount).toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
@@ -231,7 +231,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               ),
                               const SizedBox(height: 8),
                               _ExchangeInfoRow(
-                                label: loc.youReceive,
+                                label: localizations.youReceive,
                                 value:
                                     conversionResult != null && inputAmount > 0
                                         ? '= ${conversionResult.toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
@@ -240,7 +240,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               ),
                               const SizedBox(height: 8),
                               _ExchangeInfoRow(
-                                label: loc.estimatedTime,
+                                label: localizations.estimatedTime,
                                 value: '= 1 Min',
                                 bold: false,
                               ),
@@ -270,7 +270,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                           }
                                           : null,
                                   child: Text(
-                                    loc.exchangeButton,
+                                    localizations.exchangeButton,
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
@@ -293,7 +293,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 }
 
 class _SwapCurrency extends StatelessWidget {
-  const _SwapCurrency({super.key, required this.selectedCrypto, required this.selectedFiat});
+  const _SwapCurrency({required this.selectedCrypto, required this.selectedFiat});
 
   final CryptoCurrencyModel? selectedCrypto;
   final FiatCurrencyModel? selectedFiat;

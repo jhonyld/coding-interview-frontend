@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'features_modules/calculator/presentation/pages/home_page.dart';
 import 'features_modules/calculator/data/datasources/currency_local_data_source.dart';
 import 'features_modules/calculator/data/datasources/currency_api_data_source.dart';
