@@ -90,6 +90,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       final conversionResult = state.conversionResult;
                       final isFetchingRate = state.isFetchingRate;
                       final error = state.error;
+                      final isLeftCrypto = state.isLeftCrypto;
+                      final leftCurrency = isLeftCrypto ? selectedCrypto : selectedFiat;
+                      final rightCurrency = isLeftCrypto ? selectedFiat : selectedCrypto;
+                      final leftCurrencies = isLeftCrypto ? cryptocurrencies : fiatCurrencies;
+                      final rightCurrencies = isLeftCrypto ? fiatCurrencies : cryptocurrencies;
                       return SingleChildScrollView(
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
@@ -119,7 +124,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     children: [
                                       _CurrencySelectorButton(
                                         label: localizations.haveLabel,
-                                        currency: selectedCrypto,
+                                        currency: leftCurrency,
                                         isActive: true,
                                         onTap: () {
                                           showModalBottomSheet(
@@ -127,26 +132,36 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                             isScrollControlled: true,
                                             builder:
                                                 (context) => CurrencySelectorModal(
-                                                  currencies: cryptocurrencies,
-                                                  selectedCurrency: selectedCrypto,
-                                                  onCurrencySelected:
-                                                      (currency) => context
-                                                          .read<CurrencyBloc>()
-                                                          .add(SelectCryptoCurrency(currency)),
-                                                  title: localizations.cryptoModalTitle,
-                                                  isCrypto: true,
+                                                  currencies: leftCurrencies,
+                                                  selectedCurrency: leftCurrency,
+                                                  onCurrencySelected: (currency) {
+                                                    if (isLeftCrypto) {
+                                                      context.read<CurrencyBloc>().add(
+                                                        SelectCryptoCurrency(currency),
+                                                      );
+                                                    } else {
+                                                      context.read<CurrencyBloc>().add(
+                                                        SelectFiatCurrency(currency),
+                                                      );
+                                                    }
+                                                  },
+                                                  title:
+                                                      isLeftCrypto
+                                                          ? localizations.cryptoModalTitle
+                                                          : localizations.fiatModalTitle,
+                                                  isCrypto: isLeftCrypto,
                                                 ),
                                           );
                                         },
                                       ),
-
                                       _SwapCurrency(
+                                        isLeftCrypto: isLeftCrypto,
                                         selectedCrypto: selectedCrypto,
                                         selectedFiat: selectedFiat,
                                       ),
                                       _CurrencySelectorButton(
                                         label: localizations.wantLabel,
-                                        currency: selectedFiat,
+                                        currency: rightCurrency,
                                         isActive: true,
                                         onTap: () {
                                           showModalBottomSheet(
@@ -154,14 +169,24 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                             isScrollControlled: true,
                                             builder:
                                                 (context) => CurrencySelectorModal(
-                                                  currencies: fiatCurrencies,
-                                                  selectedCurrency: selectedFiat,
-                                                  onCurrencySelected:
-                                                      (currency) => context
-                                                          .read<CurrencyBloc>()
-                                                          .add(SelectFiatCurrency(currency)),
-                                                  title: localizations.fiatModalTitle,
-                                                  isCrypto: false,
+                                                  currencies: rightCurrencies,
+                                                  selectedCurrency: rightCurrency,
+                                                  onCurrencySelected: (currency) {
+                                                    if (isLeftCrypto) {
+                                                      context.read<CurrencyBloc>().add(
+                                                        SelectFiatCurrency(currency),
+                                                      );
+                                                    } else {
+                                                      context.read<CurrencyBloc>().add(
+                                                        SelectCryptoCurrency(currency),
+                                                      );
+                                                    }
+                                                  },
+                                                  title:
+                                                      isLeftCrypto
+                                                          ? localizations.fiatModalTitle
+                                                          : localizations.cryptoModalTitle,
+                                                  isCrypto: !isLeftCrypto,
                                                 ),
                                           );
                                         },
@@ -170,48 +195,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: const Color(0xFFF4B53F), width: 2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        selectedCrypto?.symbol ?? '',
-                                        style: const TextStyle(
-                                          color: Color(0xFFF4B53F),
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: TextField(
-                                          onChanged: (value) {
-                                            _amountController.text = value.replaceAll(",", ".");
-                                            final parsed =
-                                                double.tryParse(_amountController.text) ?? 0;
-                                            context.read<CurrencyBloc>().add(AmountChanged(parsed));
-                                            // No fetch here
-                                          },
-                                          controller: _amountController,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          decoration: InputDecoration(
-                                            border: InputBorder.none,
-                                            hintText: "0.00",
-                                          ),
-                                          keyboardType: TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                _AmountTextField(
+                                  selectedCrypto: isLeftCrypto ? selectedCrypto : null,
+                                  selectedFiat: !isLeftCrypto ? selectedFiat : null,
+                                  amountController: _amountController,
+                                  isLeftCrypto: isLeftCrypto,
                                 ),
                                 const SizedBox(height: 24),
                                 // Exchange info
@@ -219,7 +207,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   label: localizations.estimatedRate,
                                   value:
                                       conversionResult != null && inputAmount > 0
-                                          ? '= 	${(conversionResult / inputAmount).toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
+                                          ? '=  ${(conversionResult / inputAmount).toStringAsFixed(2)} '
+                                              '${rightCurrency is CryptoCurrencyModel
+                                                  ? rightCurrency.symbol
+                                                  : rightCurrency is FiatCurrencyModel
+                                                  ? rightCurrency.symbol
+                                                  : ''}'
                                           : '-',
                                   bold: false,
                                 ),
@@ -228,7 +221,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   label: localizations.youReceive,
                                   value:
                                       conversionResult != null && inputAmount > 0
-                                          ? '= ${conversionResult.toStringAsFixed(2)} ${selectedFiat?.symbol ?? ''}'
+                                          ? '= ${conversionResult.toStringAsFixed(2)} '
+                                              '${rightCurrency is CryptoCurrencyModel
+                                                  ? rightCurrency.symbol
+                                                  : rightCurrency is FiatCurrencyModel
+                                                  ? rightCurrency.symbol
+                                                  : ''}'
                                           : '-',
                                   bold: false,
                                 ),
@@ -239,50 +237,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   bold: false,
                                 ),
                                 const SizedBox(height: 20),
-                                // Action button
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 48,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF59E0B),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    onPressed:
-                                        inputAmount > 0 &&
-                                                selectedCrypto != null &&
-                                                selectedFiat != null &&
-                                                !isFetchingRate
-                                            ? () {
-                                              context.read<CurrencyBloc>().add(
-                                                FetchConversionRate(),
-                                              );
-                                            }
-                                            : null,
-                                    child:
-                                        isFetchingRate
-                                            ? const SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                valueColor: AlwaysStoppedAnimation<Color>(
-                                                  Colors.white,
-                                                ),
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                            : Text(
-                                              localizations.exchangeButton,
-                                              style: const TextStyle(color: Colors.white),
-                                            ),
-                                  ),
+                                _ExchangeButton(
+                                  inputAmount: inputAmount,
+                                  selectedCrypto: selectedCrypto,
+                                  selectedFiat: selectedFiat,
+                                  isFetchingRate: isFetchingRate,
+                                  localizations: localizations,
                                 ),
                               ],
                             ),
@@ -302,9 +262,118 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
-class _SwapCurrency extends StatelessWidget {
-  const _SwapCurrency({required this.selectedCrypto, required this.selectedFiat});
+class _AmountTextField extends StatelessWidget {
+  const _AmountTextField({
+    super.key,
+    this.selectedCrypto,
+    this.selectedFiat,
+    required TextEditingController amountController,
+    required this.isLeftCrypto,
+  }) : _amountController = amountController;
 
+  final CryptoCurrencyModel? selectedCrypto;
+  final FiatCurrencyModel? selectedFiat;
+  final TextEditingController _amountController;
+  final bool isLeftCrypto;
+
+  @override
+  Widget build(BuildContext context) {
+    final symbol = isLeftCrypto ? selectedCrypto?.symbol : selectedFiat?.symbol;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFF4B53F), width: 2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Row(
+        children: [
+          Text(
+            symbol ?? '',
+            style: const TextStyle(
+              color: Color(0xFFF4B53F),
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              onChanged: (value) {
+                _amountController.text = value.replaceAll(",", ".");
+                final parsed = double.tryParse(_amountController.text) ?? 0;
+                context.read<CurrencyBloc>().add(AmountChanged(parsed));
+                // No fetch here
+              },
+              controller: _amountController,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              decoration: InputDecoration(border: InputBorder.none, hintText: "0.00"),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExchangeButton extends StatelessWidget {
+  const _ExchangeButton({
+    super.key,
+    required this.inputAmount,
+    required this.selectedCrypto,
+    required this.selectedFiat,
+    required this.isFetchingRate,
+    required this.localizations,
+  });
+
+  final double inputAmount;
+  final CryptoCurrencyModel? selectedCrypto;
+  final FiatCurrencyModel? selectedFiat;
+  final bool isFetchingRate;
+  final AppLocalizations localizations;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFF59E0B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          elevation: 0,
+        ),
+        onPressed:
+            inputAmount > 0 && selectedCrypto != null && selectedFiat != null && !isFetchingRate
+                ? () {
+                  context.read<CurrencyBloc>().add(FetchConversionRate());
+                }
+                : null,
+        child:
+            isFetchingRate
+                ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2,
+                  ),
+                )
+                : Text(localizations.exchangeButton, style: const TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+}
+
+class _SwapCurrency extends StatelessWidget {
+  const _SwapCurrency({
+    required this.isLeftCrypto,
+    required this.selectedCrypto,
+    required this.selectedFiat,
+  });
+
+  final bool isLeftCrypto;
   final CryptoCurrencyModel? selectedCrypto;
   final FiatCurrencyModel? selectedFiat;
 

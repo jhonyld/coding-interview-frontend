@@ -41,8 +41,10 @@ class CurrencyLoaded extends CurrencyState {
   final FiatCurrencyModel? selectedFiat;
   final double inputAmount;
   final double? conversionResult;
+  final double? convertedAmount; // <-- Add this line
   final bool isFetchingRate;
   final String? error;
+  final bool isLeftCrypto;
 
   CurrencyLoaded({
     required this.cryptocurrencies,
@@ -51,8 +53,10 @@ class CurrencyLoaded extends CurrencyState {
     this.selectedFiat,
     this.inputAmount = 0.0,
     this.conversionResult,
+    this.convertedAmount, // <-- Add this line
     this.isFetchingRate = false,
     this.error,
+    this.isLeftCrypto = true,
   });
 
   CurrencyLoaded copyWith({
@@ -62,8 +66,10 @@ class CurrencyLoaded extends CurrencyState {
     FiatCurrencyModel? selectedFiat,
     double? inputAmount,
     double? conversionResult,
+    double? convertedAmount, // <-- Add this line
     bool? isFetchingRate,
     String? error,
+    bool? isLeftCrypto,
   }) {
     return CurrencyLoaded(
       cryptocurrencies: cryptocurrencies ?? this.cryptocurrencies,
@@ -72,8 +78,10 @@ class CurrencyLoaded extends CurrencyState {
       selectedFiat: selectedFiat ?? this.selectedFiat,
       inputAmount: inputAmount ?? this.inputAmount,
       conversionResult: conversionResult,
+      convertedAmount: convertedAmount ?? this.convertedAmount, // <-- Add this line
       isFetchingRate: isFetchingRate ?? this.isFetchingRate,
       error: error,
+      isLeftCrypto: isLeftCrypto ?? this.isLeftCrypto,
     );
   }
 }
@@ -105,6 +113,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
           fiatCurrencies: data.fiatCurrencies,
           selectedCrypto: data.cryptocurrencies.isNotEmpty ? data.cryptocurrencies[0] : null,
           selectedFiat: data.fiatCurrencies.isNotEmpty ? data.fiatCurrencies[0] : null,
+          isLeftCrypto: true,
         ),
       );
     } catch (e) {
@@ -142,14 +151,23 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
       if (s.selectedCrypto != null && s.selectedFiat != null && s.inputAmount > 0) {
         emit(s.copyWith(isFetchingRate: true, error: null));
         try {
-          final rate = await repository.getExchangeRate(
-            type: 0, // Crypto->Fiat
+          final type = s.isLeftCrypto ? 0 : 1;
+          final rawRate = await repository.getExchangeRate(
+            type: type, // Crypto->Fiat or Fiat->Crypto
             cryptoCurrencyId: s.selectedCrypto!.id,
             fiatCurrencyId: s.selectedFiat!.id,
             amount: s.inputAmount,
-            amountCurrencyId: s.selectedCrypto!.id,
+            amountCurrencyId: s.isLeftCrypto ? s.selectedCrypto!.id : s.selectedFiat!.id,
           );
-          emit(s.copyWith(conversionResult: rate, isFetchingRate: false));
+
+          final result = type == 0 ? rawRate * s.inputAmount : s.inputAmount / rawRate;
+          emit(
+            s.copyWith(
+              convertedAmount: rawRate,
+              conversionResult: result.toDouble(),
+              isFetchingRate: false,
+            ),
+          );
         } catch (e) {
           emit(s.copyWith(error: e.toString(), isFetchingRate: false));
         }
@@ -160,19 +178,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
   void _onSwapCurrencies(SwapCurrencies event, Emitter<CurrencyState> emit) {
     if (state is CurrencyLoaded) {
       final s = state as CurrencyLoaded;
-      emit(
-        s.copyWith(
-          selectedCrypto:
-              s.selectedFiat != null && s.cryptocurrencies.any((c) => c.id == s.selectedFiat!.id)
-                  ? s.cryptocurrencies.firstWhere((c) => c.id == s.selectedFiat!.id)
-                  : s.selectedCrypto,
-          selectedFiat:
-              s.selectedCrypto != null && s.fiatCurrencies.any((f) => f.id == s.selectedCrypto!.id)
-                  ? s.fiatCurrencies.firstWhere((f) => f.id == s.selectedCrypto!.id)
-                  : s.selectedFiat,
-          conversionResult: null,
-        ),
-      );
+      emit(s.copyWith(isLeftCrypto: !s.isLeftCrypto, conversionResult: null));
     }
   }
 }
