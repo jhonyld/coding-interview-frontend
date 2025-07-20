@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../data/models/crypto_currency_model.dart';
 import '../../data/models/fiat_currency_model.dart';
 
@@ -10,169 +11,167 @@ class CurrencySelectorModal extends StatelessWidget {
   final bool isCrypto;
 
   const CurrencySelectorModal({
-    Key? key,
+    super.key,
     required this.currencies,
     required this.selectedCurrency,
     required this.onCurrencySelected,
     required this.title,
     required this.isCrypto,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    final loc = AppLocalizations.of(context);
+    return SafeArea(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _Header(title: title),
+            _CurrencyList(
+              currencies: currencies,
+              selectedCurrency: selectedCurrency,
+              onCurrencySelected: onCurrencySelected,
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        children: [
-          // Header with gradient background
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.blue.shade600, Colors.blue.shade800],
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
-          // Currency List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: currencies.length,
-              itemBuilder: (context, index) {
-                final currency = currencies[index];
-                final isSelected = selectedCurrency?.id == currency.id;
+    );
+  }
+}
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.blue.shade50 : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border:
-                        isSelected
-                            ? Border.all(color: Colors.blueAccent, width: 2)
-                            : Border.all(color: Colors.grey.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        onCurrencySelected(currency);
-                        Navigator.of(context).pop();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Row(
-                          children: [
-                            // Currency Icon
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 3,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  currency.logoPath,
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            // Currency Info
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    currency.symbol,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: isSelected ? Colors.blueAccent : Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    currency.name,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: isSelected ? Colors.blueAccent : Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Selection Indicator
-                            if (isSelected)
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Colors.blueAccent,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.check, color: Colors.white, size: 20),
-                              ),
-                          ],
+class _CurrencyList extends StatelessWidget {
+  const _CurrencyList({
+    required this.currencies,
+    required this.selectedCurrency,
+    required this.onCurrencySelected,
+  });
+
+  final List currencies;
+  final dynamic selectedCurrency;
+  final Function(dynamic) onCurrencySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: ListView.separated(
+          itemCount: currencies.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 4),
+          itemBuilder: (context, index) {
+            final currency = currencies[index];
+            final isSelected = selectedCurrency?.id == currency.id;
+            return InkWell(
+              //borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                onCurrencySelected(currency);
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                height: 70,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(shape: BoxShape.circle),
+                      child: ClipOval(
+                        child: Image.asset(
+                          currency.logoPath,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            currency.symbol,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            currency.name,
+                            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      child:
+                          isSelected
+                              ? Container(
+                                width: 16,
+                                height: 16,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF59E0B),
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                              : Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: const Color(0xFF6B7280), width: 2),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 24, bottom: 12),
+        child: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 4,
+              decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(2)),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: TextStyle(fontSize: 20, color: Colors.black),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

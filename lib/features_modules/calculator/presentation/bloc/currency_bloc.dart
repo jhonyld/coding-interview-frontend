@@ -25,6 +25,8 @@ class AmountChanged extends CurrencyEvent {
 
 class FetchConversionRate extends CurrencyEvent {}
 
+class SwapCurrencies extends CurrencyEvent {}
+
 // States
 abstract class CurrencyState {}
 
@@ -90,6 +92,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
     on<SelectFiatCurrency>(_onSelectFiat);
     on<AmountChanged>(_onAmountChanged);
     on<FetchConversionRate>(_onFetchConversionRate);
+    on<SwapCurrencies>(_onSwapCurrencies);
   }
 
   Future<void> _onLoadCurrencies(LoadCurrencies event, Emitter<CurrencyState> emit) async {
@@ -140,7 +143,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
         emit(s.copyWith(isFetchingRate: true, error: null));
         try {
           final rate = await repository.getExchangeRate(
-            type: 0, // Crypto->Fiat
+            type: 1, // Crypto->Fiat
             cryptoCurrencyId: s.selectedCrypto!.id,
             fiatCurrencyId: s.selectedFiat!.id,
             amount: s.inputAmount,
@@ -151,6 +154,25 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
           emit(s.copyWith(error: e.toString(), isFetchingRate: false));
         }
       }
+    }
+  }
+
+  void _onSwapCurrencies(SwapCurrencies event, Emitter<CurrencyState> emit) {
+    if (state is CurrencyLoaded) {
+      final s = state as CurrencyLoaded;
+      emit(
+        s.copyWith(
+          selectedCrypto:
+              s.selectedFiat != null && s.cryptocurrencies.any((c) => c.id == s.selectedFiat!.id)
+                  ? s.cryptocurrencies.firstWhere((c) => c.id == s.selectedFiat!.id)
+                  : s.selectedCrypto,
+          selectedFiat:
+              s.selectedCrypto != null && s.fiatCurrencies.any((f) => f.id == s.selectedCrypto!.id)
+                  ? s.fiatCurrencies.firstWhere((f) => f.id == s.selectedCrypto!.id)
+                  : s.selectedFiat,
+          conversionResult: null,
+        ),
+      );
     }
   }
 }

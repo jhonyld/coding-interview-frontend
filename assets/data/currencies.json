@@ -4,23 +4,16 @@
             "id": "usdt",
             "name": "Tether USD",
             "symbol": "USDT",
-            "logoPath": "assets/cripto_currencies/TATUM-TRON-USDT.png",
-            "conversionRates": {
-                "usd": 1.00,
-                "brl": 5.20,
-                "cop": 4000.00,
-                "pen": 3.80,
-                "ves": 35.50
-            }
+            "logoPath": "assets/cripto_currencies/TATUM-TRON-USDT.png"
+        },
+        {
+            "id": "usdc",
+            "name": "USDC",
+            "symbol": "USDC",
+            "logoPath": "assets/cripto_currencies/TATUM-TRON-USDT.png"
         }
     ],
     "fiatCurrencies": [
-        {
-            "id": "usd",
-            "name": "US Dollar",
-            "symbol": "USD",
-            "logoPath": "assets/fiat_currencies/BRL.png"
-        },
         {
             "id": "brl",
             "name": "Brazilian Real",

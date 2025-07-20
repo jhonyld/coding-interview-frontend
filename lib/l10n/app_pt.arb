@@ -6,5 +6,13 @@
   "resultLabel": "Resultado: {value} {currency}",
   "enterAmountHint": "Digite o valor e selecione as moedas",
   "errorLabel": "Erro: {error}",
-  "loadingLabel": "Carregando..."
+  "loadingLabel": "Carregando...",
+  "haveLabel": "TENHO",
+  "wantLabel": "QUERO",
+  "cryptoModalTitle": "Selecionar Criptomoeda",
+  "fiatModalTitle": "FIAT",
+  "estimatedRate": "Taxa estimada",
+  "youReceive": "Você receberá",
+  "estimatedTime": "Tempo estimado",
+  "exchangeButton": "Trocar"
 } 

@@ -100,6 +100,94 @@ class AppLocalizations {
         return 'Enter amount and select currencies';
     }
   }
+
+  String get haveLabel {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'TENGO';
+      case 'pt':
+        return 'TENHO';
+      default:
+        return 'HAVE';
+    }
+  }
+
+  String get wantLabel {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'QUIERO';
+      case 'pt':
+        return 'QUERO';
+      default:
+        return 'WANT';
+    }
+  }
+
+  String get cryptoModalTitle {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'Cripto';
+      case 'pt':
+        return 'Cripto';
+      default:
+        return 'Cripto';
+    }
+  }
+
+  String get fiatModalTitle {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'FIAT';
+      case 'pt':
+        return 'FIAT';
+      default:
+        return 'FIAT';
+    }
+  }
+
+  String get estimatedRate {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'Tasa estimada';
+      case 'pt':
+        return 'Taxa estimada';
+      default:
+        return 'Estimated Rate';
+    }
+  }
+
+  String get youReceive {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'Recibirás';
+      case 'pt':
+        return 'Você receberá';
+      default:
+        return 'You Receive';
+    }
+  }
+
+  String get estimatedTime {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'Tiempo estimado';
+      case 'pt':
+        return 'Tempo estimado';
+      default:
+        return 'Estimated Time';
+    }
+  }
+
+  String get exchangeButton {
+    switch (locale.languageCode) {
+      case 'es':
+        return 'Cambiar';
+      case 'pt':
+        return 'Trocar';
+      default:
+        return 'Exchange';
+    }
+  }
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
