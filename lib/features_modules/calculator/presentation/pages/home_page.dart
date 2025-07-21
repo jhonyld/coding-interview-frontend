@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/currency_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/currency_selector_modal.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -270,24 +271,77 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
-class _AmountTextField extends StatelessWidget {
+class _AmountTextField extends StatefulWidget {
   const _AmountTextField({
-    super.key,
     this.selectedCrypto,
     this.selectedFiat,
-    required TextEditingController amountController,
+    required this.amountController,
     required this.type,
-  }) : _amountController = amountController;
+  });
 
   final CryptoCurrencyModel? selectedCrypto;
   final FiatCurrencyModel? selectedFiat;
-  final TextEditingController _amountController;
+  final TextEditingController amountController;
   final ConversionType type;
+
+  @override
+  State<_AmountTextField> createState() => _AmountTextFieldState();
+}
+
+class _AmountTextFieldState extends State<_AmountTextField> {
+  String _rawDigits = '';
+  FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.amountController.text = _formatAmount(0);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  String _formatAmount(int value) {
+    return '${value.toString()}.00';
+  }
+
+  void _updateController() {
+    int intValue = int.tryParse(_rawDigits) ?? 0;
+    widget.amountController.text = _formatAmount(intValue);
+    widget.amountController.selection = TextSelection.fromPosition(
+      TextPosition(offset: widget.amountController.text.length),
+    );
+    context.read<CurrencyBloc>().add(AmountChanged(intValue.toDouble()));
+  }
+
+  void _handleKey(RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      final key = event.logicalKey;
+      if (key == LogicalKeyboardKey.backspace) {
+        if (_rawDigits.isNotEmpty) {
+          setState(() {
+            _rawDigits = _rawDigits.substring(0, _rawDigits.length - 1);
+            _updateController();
+          });
+        }
+      } else if (key.keyLabel.length == 1 && RegExp(r'\d').hasMatch(key.keyLabel)) {
+        setState(() {
+          _rawDigits += key.keyLabel;
+          _updateController();
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final symbol =
-        type == ConversionType.cryptoToFiat ? selectedCrypto?.symbol : selectedFiat?.symbol;
+        widget.type == ConversionType.cryptoToFiat
+            ? widget.selectedCrypto?.symbol ?? ''
+            : widget.selectedFiat?.symbol ?? '';
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFFF4B53F), width: 2),
@@ -297,7 +351,7 @@ class _AmountTextField extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            symbol ?? '',
+            symbol,
             style: const TextStyle(
               color: Color(0xFFF4B53F),
               fontWeight: FontWeight.w400,
@@ -306,21 +360,41 @@ class _AmountTextField extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TextField(
-              onChanged: (value) {
-                _amountController.text = value.replaceAll(",", ".");
-                final parsed = double.tryParse(_amountController.text) ?? 0;
-                context.read<CurrencyBloc>().add(AmountChanged(parsed));
-                // No fetch here
-              },
-              controller: _amountController,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-              decoration: InputDecoration(border: InputBorder.none, hintText: "0.00"),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            child: RawKeyboardListener(
+              focusNode: _focusNode,
+              onKey: _handleKey,
+              child: GestureDetector(
+                onTap: () => _focusNode.requestFocus(),
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: widget.amountController,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                    decoration: const InputDecoration(border: InputBorder.none, hintText: "0.00"),
+                    keyboardType: TextInputType.number,
+                    readOnly: true,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MoneyInputFormatter extends TextInputFormatter {
+  final void Function(String rawDigits) onValueChanged;
+  _MoneyInputFormatter({required this.onValueChanged});
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    onValueChanged(digits);
+    String formatted = (digits.isEmpty ? '0' : int.parse(digits).toString()) + '.00';
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
