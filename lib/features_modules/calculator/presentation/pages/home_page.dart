@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       final conversionResult = state.conversionResult;
                       final isFetchingRate = state.isFetchingRate;
                       final error = state.error;
-                      final isLeftCrypto = state.isLeftCrypto;
+                      final isLeftCrypto = state.type == ConversionType.cryptoToFiat;
                       final leftCurrency = isLeftCrypto ? selectedCrypto : selectedFiat;
                       final rightCurrency = isLeftCrypto ? selectedFiat : selectedCrypto;
                       final leftCurrencies = isLeftCrypto ? cryptocurrencies : fiatCurrencies;
@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                   currencies: leftCurrencies,
                                                   selectedCurrency: leftCurrency,
                                                   onCurrencySelected: (currency) {
-                                                    if (isLeftCrypto) {
+                                                    if (state.type == ConversionType.cryptoToFiat) {
                                                       context.read<CurrencyBloc>().add(
                                                         SelectCryptoCurrency(currency),
                                                       );
@@ -146,16 +146,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                     }
                                                   },
                                                   title:
-                                                      isLeftCrypto
+                                                      state.type == ConversionType.cryptoToFiat
                                                           ? localizations.cryptoModalTitle
                                                           : localizations.fiatModalTitle,
-                                                  isCrypto: isLeftCrypto,
+                                                  isCrypto:
+                                                      state.type == ConversionType.cryptoToFiat,
                                                 ),
                                           );
                                         },
                                       ),
                                       _SwapCurrency(
-                                        isLeftCrypto: isLeftCrypto,
+                                        type: state.type,
                                         selectedCrypto: selectedCrypto,
                                         selectedFiat: selectedFiat,
                                       ),
@@ -172,7 +173,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                   currencies: rightCurrencies,
                                                   selectedCurrency: rightCurrency,
                                                   onCurrencySelected: (currency) {
-                                                    if (isLeftCrypto) {
+                                                    if (state.type == ConversionType.cryptoToFiat) {
                                                       context.read<CurrencyBloc>().add(
                                                         SelectFiatCurrency(currency),
                                                       );
@@ -183,10 +184,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                     }
                                                   },
                                                   title:
-                                                      isLeftCrypto
+                                                      state.type == ConversionType.cryptoToFiat
                                                           ? localizations.fiatModalTitle
                                                           : localizations.cryptoModalTitle,
-                                                  isCrypto: !isLeftCrypto,
+                                                  isCrypto:
+                                                      state.type != ConversionType.cryptoToFiat,
                                                 ),
                                           );
                                         },
@@ -196,10 +198,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 ),
                                 const SizedBox(height: 24),
                                 _AmountTextField(
-                                  selectedCrypto: isLeftCrypto ? selectedCrypto : null,
-                                  selectedFiat: !isLeftCrypto ? selectedFiat : null,
+                                  selectedCrypto:
+                                      state.type == ConversionType.cryptoToFiat
+                                          ? selectedCrypto
+                                          : null,
+                                  selectedFiat:
+                                      state.type != ConversionType.cryptoToFiat
+                                          ? selectedFiat
+                                          : null,
                                   amountController: _amountController,
-                                  isLeftCrypto: isLeftCrypto,
+                                  type: state.type,
                                 ),
                                 const SizedBox(height: 24),
                                 // Exchange info
@@ -207,7 +215,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   label: localizations.estimatedRate,
                                   value:
                                       conversionResult != null && inputAmount > 0
-                                          ? '=  ${(conversionResult / inputAmount).toStringAsFixed(2)} '
+                                          ? '=  	${(conversionResult / inputAmount).toStringAsFixed(2)} '
                                               '${rightCurrency is CryptoCurrencyModel
                                                   ? rightCurrency.symbol
                                                   : rightCurrency is FiatCurrencyModel
@@ -268,17 +276,18 @@ class _AmountTextField extends StatelessWidget {
     this.selectedCrypto,
     this.selectedFiat,
     required TextEditingController amountController,
-    required this.isLeftCrypto,
+    required this.type,
   }) : _amountController = amountController;
 
   final CryptoCurrencyModel? selectedCrypto;
   final FiatCurrencyModel? selectedFiat;
   final TextEditingController _amountController;
-  final bool isLeftCrypto;
+  final ConversionType type;
 
   @override
   Widget build(BuildContext context) {
-    final symbol = isLeftCrypto ? selectedCrypto?.symbol : selectedFiat?.symbol;
+    final symbol =
+        type == ConversionType.cryptoToFiat ? selectedCrypto?.symbol : selectedFiat?.symbol;
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFFF4B53F), width: 2),
@@ -368,12 +377,12 @@ class _ExchangeButton extends StatelessWidget {
 
 class _SwapCurrency extends StatelessWidget {
   const _SwapCurrency({
-    required this.isLeftCrypto,
+    required this.type,
     required this.selectedCrypto,
     required this.selectedFiat,
   });
 
-  final bool isLeftCrypto;
+  final ConversionType type;
   final CryptoCurrencyModel? selectedCrypto;
   final FiatCurrencyModel? selectedFiat;
 

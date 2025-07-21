@@ -3,6 +3,9 @@ import '../../data/models/crypto_currency_model.dart';
 import '../../data/models/fiat_currency_model.dart';
 import '../../data/repositories/currency_repository.dart';
 
+// Conversion direction type enum
+enum ConversionType { cryptoToFiat, fiatToCrypto }
+
 // Events
 abstract class CurrencyEvent {}
 
@@ -41,10 +44,10 @@ class CurrencyLoaded extends CurrencyState {
   final FiatCurrencyModel? selectedFiat;
   final double inputAmount;
   final double? conversionResult;
-  final double? convertedAmount; // <-- Add this line
+  final double? convertedAmount;
   final bool isFetchingRate;
   final String? error;
-  final bool isLeftCrypto;
+  final ConversionType type;
 
   CurrencyLoaded({
     required this.cryptocurrencies,
@@ -53,10 +56,10 @@ class CurrencyLoaded extends CurrencyState {
     this.selectedFiat,
     this.inputAmount = 0.0,
     this.conversionResult,
-    this.convertedAmount, // <-- Add this line
+    this.convertedAmount,
     this.isFetchingRate = false,
     this.error,
-    this.isLeftCrypto = true,
+    this.type = ConversionType.cryptoToFiat,
   });
 
   CurrencyLoaded copyWith({
@@ -66,10 +69,10 @@ class CurrencyLoaded extends CurrencyState {
     FiatCurrencyModel? selectedFiat,
     double? inputAmount,
     double? conversionResult,
-    double? convertedAmount, // <-- Add this line
+    double? convertedAmount,
     bool? isFetchingRate,
     String? error,
-    bool? isLeftCrypto,
+    ConversionType? type,
   }) {
     return CurrencyLoaded(
       cryptocurrencies: cryptocurrencies ?? this.cryptocurrencies,
@@ -78,10 +81,10 @@ class CurrencyLoaded extends CurrencyState {
       selectedFiat: selectedFiat ?? this.selectedFiat,
       inputAmount: inputAmount ?? this.inputAmount,
       conversionResult: conversionResult,
-      convertedAmount: convertedAmount ?? this.convertedAmount, // <-- Add this line
+      convertedAmount: convertedAmount ?? this.convertedAmount,
       isFetchingRate: isFetchingRate ?? this.isFetchingRate,
       error: error,
-      isLeftCrypto: isLeftCrypto ?? this.isLeftCrypto,
+      type: type ?? this.type,
     );
   }
 }
@@ -113,7 +116,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
           fiatCurrencies: data.fiatCurrencies,
           selectedCrypto: data.cryptocurrencies.isNotEmpty ? data.cryptocurrencies[0] : null,
           selectedFiat: data.fiatCurrencies.isNotEmpty ? data.fiatCurrencies[0] : null,
-          isLeftCrypto: true,
+          type: ConversionType.cryptoToFiat,
         ),
       );
     } catch (e) {
@@ -151,16 +154,17 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
       if (s.selectedCrypto != null && s.selectedFiat != null && s.inputAmount > 0) {
         emit(s.copyWith(isFetchingRate: true, error: null));
         try {
-          final type = s.isLeftCrypto ? 0 : 1;
+          final typeInt = s.type == ConversionType.cryptoToFiat ? 0 : 1;
           final rawRate = await repository.getExchangeRate(
-            type: type, // Crypto->Fiat or Fiat->Crypto
+            type: typeInt, // Crypto->Fiat or Fiat->Crypto
             cryptoCurrencyId: s.selectedCrypto!.id,
             fiatCurrencyId: s.selectedFiat!.id,
             amount: s.inputAmount,
-            amountCurrencyId: s.isLeftCrypto ? s.selectedCrypto!.id : s.selectedFiat!.id,
+            amountCurrencyId:
+                s.type == ConversionType.cryptoToFiat ? s.selectedCrypto!.id : s.selectedFiat!.id,
           );
 
-          final result = type == 0 ? rawRate * s.inputAmount : s.inputAmount / rawRate;
+          final result = typeInt == 0 ? rawRate * s.inputAmount : s.inputAmount / rawRate;
           emit(
             s.copyWith(
               convertedAmount: rawRate,
@@ -178,7 +182,15 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
   void _onSwapCurrencies(SwapCurrencies event, Emitter<CurrencyState> emit) {
     if (state is CurrencyLoaded) {
       final s = state as CurrencyLoaded;
-      emit(s.copyWith(isLeftCrypto: !s.isLeftCrypto, conversionResult: null));
+      emit(
+        s.copyWith(
+          type:
+              s.type == ConversionType.cryptoToFiat
+                  ? ConversionType.fiatToCrypto
+                  : ConversionType.cryptoToFiat,
+          conversionResult: null,
+        ),
+      );
     }
   }
 }
