@@ -128,6 +128,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
     if (state is CurrencyLoaded) {
       final s = state as CurrencyLoaded;
       emit(s.copyWith(selectedCrypto: event.crypto, conversionResult: null));
+      if (s.inputAmount >= 10) add(FetchConversionRate());
     }
   }
 
@@ -135,6 +136,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
     if (state is CurrencyLoaded) {
       final s = state as CurrencyLoaded;
       emit(s.copyWith(selectedFiat: event.fiat, conversionResult: null));
+      if (s.inputAmount >= 10) add(FetchConversionRate());
     }
   }
 
@@ -157,7 +159,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
         try {
           final typeInt = s.type == ConversionType.cryptoToFiat ? 0 : 1;
           final rawRate = await repository.getExchangeRate(
-            type: typeInt, // Crypto->Fiat or Fiat->Crypto
+            type: typeInt,
             cryptoCurrencyId: s.selectedCrypto!.id,
             fiatCurrencyId: s.selectedFiat!.id,
             amount: s.inputAmount,

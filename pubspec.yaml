@@ -68,6 +68,7 @@ flutter:
     - assets/screen_1.jpg
     - assets/sheet_1.jpg
     - assets/sheet_2.jpg
+    - .env
   generate: true
   # Localization configuration
   # The l10n.yaml file can be used for more advanced config if needed
