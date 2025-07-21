@@ -3,12 +3,17 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'features_modules/calculator/presentation/pages/home_page.dart';
-import 'features_modules/calculator/data/datasources/currency_local_data_source.dart';
-import 'features_modules/calculator/data/datasources/currency_api_data_source.dart';
-import 'features_modules/calculator/data/repositories/currency_repository.dart';
 import 'features_modules/calculator/presentation/bloc/currency_bloc.dart';
+import 'service_locator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
+  await dotenv.load(fileName: '.env.$flavor');
+
+  setupLocator();
   runApp(const MyApp());
 }
 
@@ -17,12 +22,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repository = CurrencyRepository(
-      localDataSource: CurrencyLocalDataSource(),
-      apiDataSource: CurrencyApiDataSource(),
-    );
     return BlocProvider(
-      create: (_) => CurrencyBloc(repository)..add(LoadCurrencies()),
+      create: (_) => sl<CurrencyBloc>()..add(LoadCurrencies()),
       child: MaterialApp(
         title: 'Crypto Currency Calculator',
         debugShowCheckedModeBanner: false,
