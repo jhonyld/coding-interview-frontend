@@ -32,7 +32,8 @@ lib/
 
 ## Setup Instructions
 
-You should create a .env file for the environment variables
+You should create a .env file in the root of the project for the environment variables
+API_BASE_URL
 
 1. **Install dependencies:**
    ```sh
