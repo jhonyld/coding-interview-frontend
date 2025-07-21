@@ -2,21 +2,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flutter: Launch on Device",
+            "name": "Flutter: Launch DEV",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main.dart"
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-define=FLAVOR=dev"
+            ]
         },
         {
-            "name": "Flutter: Run Tests",
-            "type": "dart",
+            "name": "Flutter: Launch PROD",
             "request": "launch",
-            "program": "test/widget_test.dart"
-        },
-        {
-            "name": "Flutter: Attach to Process",
             "type": "dart",
-            "request": "attach"
-        }
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-define=FLAVOR=prod"
+            ]
+        },
     ]
 }
