@@ -317,8 +317,8 @@ class _AmountTextFieldState extends State<_AmountTextField> {
     context.read<CurrencyBloc>().add(AmountChanged(intValue.toDouble()));
   }
 
-  void _handleKey(RawKeyEvent event) {
-    if (event is RawKeyDownEvent) {
+  void _handleKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
       final key = event.logicalKey;
       if (key == LogicalKeyboardKey.backspace) {
         if (_rawDigits.isNotEmpty) {
@@ -360,9 +360,10 @@ class _AmountTextFieldState extends State<_AmountTextField> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: RawKeyboardListener(
+            child: KeyboardListener(
               focusNode: _focusNode,
-              onKey: _handleKey,
+
+              onKeyEvent: _handleKey,
               child: GestureDetector(
                 onTap: () => _focusNode.requestFocus(),
                 child: AbsorbPointer(
@@ -383,25 +384,24 @@ class _AmountTextFieldState extends State<_AmountTextField> {
   }
 }
 
-class _MoneyInputFormatter extends TextInputFormatter {
-  final void Function(String rawDigits) onValueChanged;
-  _MoneyInputFormatter({required this.onValueChanged});
+// class _MoneyInputFormatter extends TextInputFormatter {
+//   final void Function(String rawDigits) onValueChanged;
+//   _MoneyInputFormatter({required this.onValueChanged});
 
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    onValueChanged(digits);
-    String formatted = (digits.isEmpty ? '0' : int.parse(digits).toString()) + '.00';
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
+//   @override
+//   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+//     String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+//     onValueChanged(digits);
+//     String formatted = (digits.isEmpty ? '0' : int.parse(digits).toString()) + '.00';
+//     return TextEditingValue(
+//       text: formatted,
+//       selection: TextSelection.collapsed(offset: formatted.length),
+//     );
+//   }
+// }
 
 class _ExchangeButton extends StatelessWidget {
   const _ExchangeButton({
-    super.key,
     required this.inputAmount,
     required this.selectedCrypto,
     required this.selectedFiat,
@@ -428,7 +428,7 @@ class _ExchangeButton extends StatelessWidget {
           elevation: 0,
         ),
         onPressed:
-            inputAmount > 0 && selectedCrypto != null && selectedFiat != null && !isFetchingRate
+            inputAmount >= 10 && selectedCrypto != null && selectedFiat != null && !isFetchingRate
                 ? () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

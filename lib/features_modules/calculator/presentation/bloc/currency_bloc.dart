@@ -142,7 +142,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
     if (state is CurrencyLoaded) {
       final s = state as CurrencyLoaded;
       emit(s.copyWith(inputAmount: event.amount, conversionResult: null));
-      add(FetchConversionRate());
+      if (event.amount >= 10) add(FetchConversionRate());
     }
   }
 
@@ -174,7 +174,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
             ),
           );
         } catch (e) {
-          emit(s.copyWith(error: e.toString(), isFetchingRate: false));
+          emit(s.copyWith(error: 'Failed to fetch exchange rate', isFetchingRate: false));
         }
       }
     }
@@ -192,7 +192,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
           conversionResult: null,
         ),
       );
-      add(FetchConversionRate());
+      if (s.inputAmount >= 10) add(FetchConversionRate());
     }
   }
 }
