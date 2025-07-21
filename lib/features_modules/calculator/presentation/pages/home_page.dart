@@ -430,7 +430,12 @@ class _ExchangeButton extends StatelessWidget {
         onPressed:
             inputAmount > 0 && selectedCrypto != null && selectedFiat != null && !isFetchingRate
                 ? () {
-                  context.read<CurrencyBloc>().add(FetchConversionRate());
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Exchange successful!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
                 }
                 : null,
         child:
