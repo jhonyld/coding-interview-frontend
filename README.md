@@ -31,6 +31,9 @@ lib/
 ```
 
 ## Setup Instructions
+
+You should create a .env file for the environment variables
+
 1. **Install dependencies:**
    ```sh
    flutter pub get
@@ -39,7 +42,9 @@ lib/
    ```sh
    flutter run
    ```
-   (Choose your device: iOS, Android, or web)
+   (Choose your device: iOS, Android)
+
+
 
 ## Adding New Cryptocurrencies
 1. Open `assets/data/currencies.json`.
