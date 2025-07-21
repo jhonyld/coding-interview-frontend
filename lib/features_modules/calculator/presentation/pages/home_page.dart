@@ -15,25 +15,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  //final FocusNode _amountFocusNode = FocusNode();
   final TextEditingController _amountController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    // _amountFocusNode.addListener(_onFocusChange);
-  }
-
-  // void _onFocusChange() {
-  //   if (!_amountFocusNode.hasFocus) {
-  //     context.read<CurrencyBloc>().add(FetchConversionRate());
-  //   }
-  // }
-
-  @override
   void dispose() {
-    // _amountFocusNode.removeListener(_onFocusChange);
-    // _amountFocusNode.dispose();
     _amountController.dispose();
     super.dispose();
   }
@@ -43,7 +28,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final height = MediaQuery.sizeOf(context).height;
     final width = MediaQuery.sizeOf(context).width;
     final localizations = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -90,12 +75,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       final inputAmount = state.inputAmount;
                       final conversionResult = state.conversionResult;
                       final isFetchingRate = state.isFetchingRate;
-                      final error = state.error;
-                      final isLeftCrypto = state.type == ConversionType.cryptoToFiat;
-                      final leftCurrency = isLeftCrypto ? selectedCrypto : selectedFiat;
-                      final rightCurrency = isLeftCrypto ? selectedFiat : selectedCrypto;
-                      final leftCurrencies = isLeftCrypto ? cryptocurrencies : fiatCurrencies;
-                      final rightCurrencies = isLeftCrypto ? fiatCurrencies : cryptocurrencies;
+                      final isCryptoToFiat = state.type == ConversionType.cryptoToFiat;
+                      final leftCurrency = isCryptoToFiat ? selectedCrypto : selectedFiat;
+                      final rightCurrency = isCryptoToFiat ? selectedFiat : selectedCrypto;
+                      final leftListCurrencies = isCryptoToFiat ? cryptocurrencies : fiatCurrencies;
+                      final rightListCurrencies =
+                          isCryptoToFiat ? fiatCurrencies : cryptocurrencies;
                       return SingleChildScrollView(
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
@@ -133,7 +118,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                             isScrollControlled: true,
                                             builder:
                                                 (context) => CurrencySelectorModal(
-                                                  currencies: leftCurrencies,
+                                                  currencies: leftListCurrencies,
                                                   selectedCurrency: leftCurrency,
                                                   onCurrencySelected: (currency) {
                                                     if (state.type == ConversionType.cryptoToFiat) {
@@ -171,7 +156,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                             isScrollControlled: true,
                                             builder:
                                                 (context) => CurrencySelectorModal(
-                                                  currencies: rightCurrencies,
+                                                  currencies: rightListCurrencies,
                                                   selectedCurrency: rightCurrency,
                                                   onCurrencySelected: (currency) {
                                                     if (state.type == ConversionType.cryptoToFiat) {
@@ -290,7 +275,7 @@ class _AmountTextField extends StatefulWidget {
 
 class _AmountTextFieldState extends State<_AmountTextField> {
   String _rawDigits = '';
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -383,22 +368,6 @@ class _AmountTextFieldState extends State<_AmountTextField> {
     );
   }
 }
-
-// class _MoneyInputFormatter extends TextInputFormatter {
-//   final void Function(String rawDigits) onValueChanged;
-//   _MoneyInputFormatter({required this.onValueChanged});
-
-//   @override
-//   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-//     String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-//     onValueChanged(digits);
-//     String formatted = (digits.isEmpty ? '0' : int.parse(digits).toString()) + '.00';
-//     return TextEditingValue(
-//       text: formatted,
-//       selection: TextSelection.collapsed(offset: formatted.length),
-//     );
-//   }
-// }
 
 class _ExchangeButton extends StatelessWidget {
   const _ExchangeButton({

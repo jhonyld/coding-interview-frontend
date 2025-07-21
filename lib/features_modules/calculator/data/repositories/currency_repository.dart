@@ -3,8 +3,8 @@ import '../datasources/currency_api_data_source.dart';
 import '../models/currency_data_model.dart';
 
 class CurrencyRepository {
-  final CurrencyLocalDataSource localDataSource;
-  final CurrencyApiDataSource apiDataSource;
+  final ICurrencyLocalDataSource localDataSource;
+  final ICurrencyApiDataSource apiDataSource;
 
   CurrencyRepository({required this.localDataSource, required this.apiDataSource});
 
@@ -19,7 +19,7 @@ class CurrencyRepository {
     required double amount,
     required String amountCurrencyId,
   }) async {
-    return await apiDataSource.fetchExchangeRate(
+    return await apiDataSource.getExchangeRate(
       type: type,
       cryptoCurrencyId: cryptoCurrencyId,
       fiatCurrencyId: fiatCurrencyId,

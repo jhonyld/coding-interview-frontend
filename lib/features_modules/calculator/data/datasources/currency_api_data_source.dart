@@ -1,11 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:coding_interview_frontend/common/constants/api_constants.dart';
 
-class CurrencyApiDataSource {
-  static const String _baseUrl =
-      'https://74j6q7lg6a.execute-api.eu-west-1.amazonaws.com/stage/orderbook/public/recommendations';
+abstract class ICurrencyApiDataSource {
+  Future<double> getExchangeRate({
+    required int type, // 0: Crypto->Fiat, 1: Fiat->Crypto
+    required String cryptoCurrencyId,
+    required String fiatCurrencyId,
+    required double amount,
+    required String amountCurrencyId,
+  });
+}
 
-  Future<double> fetchExchangeRate({
+class CurrencyApiDataSource implements ICurrencyApiDataSource {
+  static String get _baseUrl => ApiConstants.baseUrl;
+
+  @override
+  Future<double> getExchangeRate({
     required int type, // 0: Crypto->Fiat, 1: Fiat->Crypto
     required String cryptoCurrencyId,
     required String fiatCurrencyId,
