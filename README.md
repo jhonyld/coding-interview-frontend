@@ -7,7 +7,7 @@ A Flutter application for iOS and Android that serves as a cryptocurrency to FIA
 - Local asset data for currencies
 - Responsive UI for phones and tablets
 - Internationalization (i18n) with 3 languages
-- State management with Provider
+- State management with BLOC
 - Clean architecture and SOLID principles
 
 ## Project Structure
@@ -52,13 +52,10 @@ lib/
 - Edit `lib/l10n/app_en.arb`, `app_es.arb`, and `app_pt.arb` for translations.
 
 ## Architecture
-- **Provider** for dependency injection and state management
+- **Get IT** for dependency injection
+- **Provider** for state management
 - **Bloc/Cubit** logic via ChangeNotifier
 - **Clean architecture**: data, domain, and presentation layers
-
-## Tests
-- Add unit tests in `test/` for business logic
-- Add widget tests for UI
 
 ## Layout Reference
 - The following images are provided in the `assets/` folder for layout and design reference:
